@@ -43,3 +43,18 @@ plt.title('Metalicity vs Age of Van Den Berg Clusters')
 
 #Show plot
 plt.show()
+
+# Defining variables for Van Den Berg Clusters
+r_c = harris_part2['r_c']
+sig_v = harris_part2['sig_v']
+
+# scatter plot Van Der Berg Data
+plt.scatter(r_c, sig_v)
+
+#Add labels and titles for the plot
+plt.xlabel('Core Radius (arcmin)')
+plt.ylabel('Velocity Dispersion(km/s)')
+plt.title('Core Radius vs Velocity Dispersion')
+
+#Show plot
+plt.show()

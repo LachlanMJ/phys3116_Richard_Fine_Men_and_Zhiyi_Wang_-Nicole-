@@ -3,24 +3,43 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # read Harris Part I Data
-harris_part1 =pd.read_csv(r"C:\Users\oscar\Downloads\HarrisPartI (1).csv")
+harris_part1 =pd.read_csv('HarrisPartI.csv')
 
 # read Harris Part 2 Data
-hariss_part2 =pd.read_csv(r"C:\Users\oscar\Downloads\HarrisPartIII.csv")
+harris_part2 =pd.read_csv('HarrisPartIII.csv')
 
-# read Krasue 21 Data
-Krasue21 =pd.read_csv(r"C:\Users\oscar\Downloads\Krause21.csv")
+# read Krause 21 Data
+Krause21 =pd.read_csv('Krause21.csv')
 
 # read vandenBerg_Table2
-vanderberg_table2 =pd.read_csv(r"C:\Users\oscar\Downloads\vandenBerg_table2.csv")
+vandenBerg_table2 =pd.read_csv('vandenBerg_table2.csv')
 
-# scatter plot Krasue 21 Data
-plt.scatter(Krasue21['Age'], Krasue21['Fe'])
+# Defining Variables for Krause Clusters
+FeH_Krause = Krause21['FeH']
+Age_Krause = Krause21['Age']
+
+# scatter plot Krause 21 Data
+plt.scatter(Age_Krause, FeH_Krause)
 
 #Add labels and titles for the plot
-plt.xlabel('Age')
-plt.ylabel('fe(Iron)')
-plt.title('Fe vs Age')
+plt.xlabel('Age of Krause Clusters')
+plt.ylabel('Metalicity of Krause Clusters')
+plt.title('Metalicity vs Age of Krause Clusters')
+
+#Show plot
+plt.show()
+
+# Defining variables for Van Den Berg Clusters
+FeH_vdb = vandenBerg_table2['FeH']
+Age_vdb = vandenBerg_table2['Age']
+
+# scatter plot Van Der Berg Data
+plt.scatter(FeH_vdb, Age_vdb)
+
+#Add labels and titles for the plot
+plt.xlabel('Age of Van Den Berg Clusters')
+plt.ylabel('Metalicity of Van Den Berg Clusters')
+plt.title('Metalicity vs Age of Van Den Berg Clusters')
 
 #Show plot
 plt.show()

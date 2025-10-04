@@ -58,3 +58,18 @@ plt.title('Core Radius vs Velocity Dispersion')
 
 #Show plot
 plt.show()
+
+#Define variables
+Stellar_Mass = Krause21['Mstar']
+Age = Krause21['Age']
+
+#Scatter plot Mass v.s. Age
+plt.scatter(Stellar_Mass, Age)
+
+#Add lables and titles for plot
+plt.xlabel('Stellar Mass')
+plt.ylabel('Stellar Age')
+plt.title('Stellar Mass vs Stellar Age')
+
+#Show plot
+plt.show()

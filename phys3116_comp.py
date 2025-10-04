@@ -44,11 +44,11 @@ plt.title('Metalicity vs Age of Van Den Berg Clusters')
 #Show plot
 plt.show()
 
-# Defining variables for Van Den Berg Clusters
+# Defining variables for Harris Part III Clusters
 r_c = harris_part2['r_c']
 sig_v = harris_part2['sig_v']
 
-# scatter plot Van Der Berg Data
+# scatter plot Harris Part III Data
 plt.scatter(r_c, sig_v)
 
 #Add labels and titles for the plot

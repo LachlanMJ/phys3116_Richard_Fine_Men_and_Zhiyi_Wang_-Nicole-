@@ -89,7 +89,7 @@ FeH_vdb = vandenBerg_table2['FeH']
 Age_vdb = vandenBerg_table2['R_G']
 
 # scatter plot Van Der Berg Data
-plt.scatter(FeH_vdb, R_G_vdb)
+plt.scatter(FeH_vdb, Age_vdb)
 
 #Add labels and titles for the plot
 plt.xlabel('Galactocentric Radius')

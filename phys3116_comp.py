@@ -15,16 +15,23 @@ Krause21 =pd.read_csv('Krause21.csv')
 vandenBerg_table2 =pd.read_csv('vandenBerg_table2.csv')
 
 # Defining Variables for Krause Clusters
-FeH_Krause = Krause21['FeH']
 Age_Krause = Krause21['Age']
+FeH_Krause = Krause21['FeH']
+Names = Krause21['Object']
 
 # scatter plot Krause 21 Data
 plt.scatter(Age_Krause, FeH_Krause)
 
+#Add labels (names) next to each data point
+for i in range(len(Krause21)):
+    plt.text(Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),   #small x-offset
+             FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),   # small y-offset
+             Names[i], fontsize=7, color='darkred', alpha=0.8)
+
 #Add labels and titles for the plot
 plt.xlabel('Age of Krause Clusters')
-plt.ylabel('Metalicity of Krause Clusters')
-plt.title('Metalicity vs Age of Krause Clusters')
+plt.ylabel('Metalicity of Clusters')
+plt.title('Age of Krause Clusters vs Metalicity')
 
 #Show plot
 plt.show()
@@ -32,9 +39,16 @@ plt.show()
 # Defining variables for Van Den Berg Clusters
 FeH_vdb = vandenBerg_table2['FeH']
 Age_vdb = vandenBerg_table2['Age']
+Names = vandenBerg_table2['Name']
 
 # scatter plot Van Der Berg Data
 plt.scatter(FeH_vdb, Age_vdb)
+
+#Add labels (names) next to each data point
+for i in range(len(vandenBerg_table2)):
+    plt.text(FeH_vdb[i] + 0.02*np.max(FeH_vdb),   # small x-offset
+             Age_vdb[i] + 0.02*np.max(Age_vdb),  # small y-offset
+             Names[i], fontsize=7, color='darkred', alpha=0.8)
 
 #Add labels and titles for the plot
 plt.xlabel('Age of Van Den Berg Clusters')
@@ -47,9 +61,16 @@ plt.show()
 # Defining variables for Harris Part III Clusters
 r_c = harris_part2['r_c']
 sig_v = harris_part2['sig_v']
+Names = harris_part2['ID']
 
 # scatter plot Harris Part III Data
 plt.scatter(r_c, sig_v)
+
+#Add labels (names) next to each data point
+for i in range(len(harris_part2)):
+    plt.text(r_c[i] + 0.02*np.max(r_c),   # small x-offset
+             sig_v[i] + 0.02*np.max(sig_v),  # small y-offset
+             Names[i], fontsize=7, color='darkred', alpha=0.8)
 
 #Add labels and titles for the plot
 plt.xlabel('Core Radius (arcmin)')
@@ -87,9 +108,16 @@ plt.show()
 # Defining variables for Van Den Berg Clusters
 FeH_vdb = vandenBerg_table2['FeH']
 Age_vdb = vandenBerg_table2['R_G']
+Names = vandenBerg_table2['Name']
 
 # scatter plot Van Der Berg Data
 plt.scatter(FeH_vdb, Age_vdb)
+
+#Add labels (names) next to each data point
+for i in range(len(vandenBerg_table2)):
+    plt.text(FeH_vdb[i] + 0.02*np.max(FeH_vdb),   # small x-offset
+             Age_vdb[i] + 0.02*np.max(Age_vdb),  # small y-offset
+             Names[i], fontsize=7, color='darkred', alpha=0.8)
 
 #Add labels and titles for the plot
 plt.xlabel('Galactocentric Radius')

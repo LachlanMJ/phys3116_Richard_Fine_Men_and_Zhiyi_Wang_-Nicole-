@@ -59,12 +59,21 @@ plt.title('Core Radius vs Velocity Dispersion')
 #Show plot
 plt.show()
 
+## Plot Stellar Mass vs. Age
 #Define variables
 Stellar_Mass = Krause21['Mstar']
 Age = Krause21['Age']
+Names = Krause21['AltName']   # Add cluster names
 
 #Scatter plot Mass v.s. Age
 plt.scatter(Stellar_Mass, Age)
+
+#Add labels (names) next to each data point
+for i in range(len(Krause21)):
+    plt.text(Stellar_Mass[i] + 0.05 * np.max(Stellar_Mass) / len(Krause21),   #small x-offset
+             Age[i] + 0.05 * np.max(Age) / len(Krause21),                     # small y-offset
+             Names[i], fontsize=7, color='darkred', alpha=0.8)
+
 
 #Add lables and titles for plot
 plt.xlabel('Stellar Mass')
@@ -73,6 +82,7 @@ plt.title('Stellar Mass vs Stellar Age')
 
 #Show plot
 plt.show()
+
 
 # Defining variables for Van Den Berg Clusters
 FeH_vdb = vandenBerg_table2['FeH']

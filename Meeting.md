@@ -50,9 +50,11 @@ Atendees: Lachlan, Oscar, Nicole
 
 ## Agenda
 - Follow up from Week 3: Plotted many more relationships that we believe to be useful in identifying accreted clusters.
+- Labels from the AltName column were added to the scatter plots to clearly identify clusters and highlight outliers for future analysis.
 - Included metalicity vs galactometric center plot.  
 - Confirm Python code works and plots are readable.  
 
 ## Possible Next Steps
 - Investigate outliers in the Galactometric radius–[Fe/H] relation.    
 - Begin to identify what all of these plots mean and how we can determine which clusters are potentially acreted. 
+- More analysis on the outliers

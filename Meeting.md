@@ -41,3 +41,18 @@ Atendees: Lachlan, Oscar, Nicole
 - Investigate outliers in the Age–[Fe/H] relation.  
 - Consider adding kinematic data (radial velocities, proper motions) to explore potential accreted clusters.  
 - Merge datasets where possible and start simple classification of clusters (in-situ vs accreted).  
+
+# PHYS3116 Group Project – Week 5 Meeting Notes
+
+**Date:** 17/10/2025  
+**Time:** 16:00 – 16:10  
+**Attendees:** Nicole, Oscar, Lachlan 
+
+## Agenda
+- Follow up from Week 3: Plotted many more relationships that we believe to be useful in identifying accreted clusters.
+- Included metalicity vs galactometric center plot.  
+- Confirm Python code works and plots are readable.  
+
+## Possible Next Steps
+- Investigate outliers in the Galactometric radius–[Fe/H] relation.    
+- Begin to identify what all of these plots mean and how we can determine which clusters are potentially acreted. 

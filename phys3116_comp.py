@@ -73,3 +73,19 @@ plt.title('Stellar Mass vs Stellar Age')
 
 #Show plot
 plt.show()
+
+# Defining variables for Van Den Berg Clusters
+FeH_vdb = vandenBerg_table2['FeH']
+Age_vdb = vandenBerg_table2['R_G']
+
+# scatter plot Van Der Berg Data
+plt.scatter(FeH_vdb, R_G_vdb)
+
+#Add labels and titles for the plot
+plt.xlabel('Galactocentric Radius')
+plt.ylabel('Metalicity of Van Den Berg Clusters')
+plt.title('Metalicity vs Galactocentric Radius of Van Den Berg Clusters')
+
+#Show plot
+plt.show()
+

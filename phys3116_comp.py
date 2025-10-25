@@ -239,6 +239,155 @@ plt.title('Age vs Metalicity (Van Den Berg)')
 #Show plot
 plt.show()
 
+### =================== VAN DEN BERG AGE vs METALICITY WITH OUTLIER ANALYSIS =================== ###
+
+plt.figure(figsize=(12, 8))
+
+# Calculate line of best fit WITH and WITHOUT outliers
+mask = ~np.isnan(Age_vdb) & ~np.isnan(FeH_vdb)
+ages_clean = Age_vdb[mask]
+feh_clean = FeH_vdb[mask]
+names_clean = np.array(Names_vdb)[mask]
+age_errors_clean = Age_error_vdb[mask] if 'Age_error_vdb' in locals() else None
+
+if len(ages_clean) > 1:
+    # STEP 1: Calculate best fit line WITH ALL DATA
+    slope_all, intercept_all, r_value_all, p_value_all, std_err_all = stats.linregress(ages_clean, feh_clean)
+    
+    # STEP 2: Identify outliers
+    predicted_all = slope_all * ages_clean + intercept_all
+    residuals = feh_clean - predicted_all
+    residual_std = np.std(residuals)
+    
+    print("VAN DEN BERG DATA - RESIDUAL ANALYSIS:")
+    print(f"Residual standard deviation: {residual_std:.4f}")
+    print(f"2σ threshold: ±{2*residual_std:.4f}")
+    
+    # Try different outlier thresholds
+    outlier_mask_2sigma = np.abs(residuals) > 2 * residual_std
+    outlier_mask_1_5sigma = np.abs(residuals) > 1.5 * residual_std
+    
+    n_outliers_2sigma = np.sum(outlier_mask_2sigma)
+    n_outliers_1_5sigma = np.sum(outlier_mask_1_5sigma)
+    
+    outliers_2sigma = names_clean[outlier_mask_2sigma]
+    outliers_1_5sigma = names_clean[outlier_mask_1_5sigma]
+    
+    print(f"2σ outliers: {n_outliers_2sigma} clusters")
+    print(f"1.5σ outliers: {n_outliers_1_5sigma} clusters")
+    
+    # STEP 3: Calculate best fit line WITHOUT outliers (using 2σ threshold)
+    if n_outliers_2sigma > 0 and (len(ages_clean) - n_outliers_2sigma) > 1:
+        inlier_mask = ~outlier_mask_2sigma
+        slope_clean, intercept_clean, r_value_clean, p_value_clean, std_err_clean = stats.linregress(
+            ages_clean[inlier_mask], feh_clean[inlier_mask])
+    else:
+        # If no 2σ outliers, try with 1.5σ
+        inlier_mask = ~outlier_mask_1_5sigma
+        if (len(ages_clean) - n_outliers_1_5sigma) > 1:
+            slope_clean, intercept_clean, r_value_clean, p_value_clean, std_err_clean = stats.linregress(
+                ages_clean[inlier_mask], feh_clean[inlier_mask])
+        else:
+            slope_clean, intercept_clean, r_value_clean = slope_all, intercept_all, r_value_all
+    
+    # Create line points
+    age_min, age_max = np.min(ages_clean), np.max(ages_clean)
+    age_range = np.linspace(age_min, age_max, 100)
+    
+    # Line WITH outliers (all data)
+    best_fit_with_outliers = slope_all * age_range + intercept_all
+    
+    # Line WITHOUT outliers
+    best_fit_without_outliers = slope_clean * age_range + intercept_clean
+    
+    # STEP 4: Plot error bars (if available)
+    if age_errors_clean is not None:
+        plt.errorbar(ages_clean, feh_clean, xerr=age_errors_clean, 
+                     fmt='none', ecolor='grey', elinewidth=1, capsize=2, alpha=0.6, zorder=1)
+    
+    # STEP 5: Plot data points with outlier highlighting
+    # Plot inliers
+    inlier_mask_plot = ~outlier_mask_2sigma if n_outliers_2sigma > 0 else ~outlier_mask_1_5sigma
+    plt.scatter(ages_clean[inlier_mask_plot], feh_clean[inlier_mask_plot], 
+                c=ages_clean[inlier_mask_plot], cmap='coolwarm', s=50, alpha=0.7, zorder=2,
+                label='Inlier Clusters')
+    
+    # Plot outliers
+    outlier_mask_plot = outlier_mask_2sigma if n_outliers_2sigma > 0 else outlier_mask_1_5sigma
+    outliers_plot = outliers_2sigma if n_outliers_2sigma > 0 else outliers_1_5sigma
+    
+    if np.sum(outlier_mask_plot) > 0:
+        plt.scatter(ages_clean[outlier_mask_plot], feh_clean[outlier_mask_plot], 
+                    color='red', s=80, alpha=0.8, edgecolors='black', linewidth=1.5, zorder=3,
+                    label=f'Potential Accreted: {np.sum(outlier_mask_plot)} clusters')
+    
+    # STEP 6: Plot both best fit lines
+    # Line WITH outliers (dashed black)
+    plt.plot(age_range, best_fit_with_outliers, 'k--', linewidth=2.5, 
+             label=f'With All Data: [Fe/H] = {slope_all:.3f}×Age + {intercept_all:.3f}\n(R² = {r_value_all**2:.3f})')
+    
+    # Line WITHOUT outliers (solid blue)
+    plt.plot(age_range, best_fit_without_outliers, 'b-', linewidth=2.5, 
+             label=f'Without Outliers: [Fe/H] = {slope_clean:.3f}×Age + {intercept_clean:.3f}\n(R² = {r_value_clean**2:.3f})')
+    
+    # Add legend
+    plt.legend(loc='best', framealpha=0.9)
+    
+    # STEP 7: Add labels for outliers only (to reduce clutter)
+    if np.sum(outlier_mask_plot) > 0:
+        for i in range(len(ages_clean)):
+            if outlier_mask_plot[i]:
+                plt.text(ages_clean[i] + 0.1, feh_clean[i] + 0.02, 
+                         names_clean[i], fontsize=8, color='red', alpha=0.9, weight='bold', zorder=4)
+    
+    # STEP 8: Print comprehensive results
+    print("\n" + "="*70)
+    print("VAN DEN BERG DATA - LINEAR REGRESSION COMPARISON")
+    print("="*70)
+    print(f"Total clusters analyzed: {len(ages_clean)}")
+    print(f"Outliers identified: {np.sum(outlier_mask_plot)} clusters")
+    
+    if np.sum(outlier_mask_plot) > 0:
+        print(f"Outlier clusters: {list(outliers_plot)}")
+    
+    print(f"\nREGRESSION RESULTS:")
+    print("WITH ALL DATA:")
+    print(f"  Equation: [Fe/H] = {slope_all:.4f} × Age + {intercept_all:.3f}")
+    print(f"  R² = {r_value_all**2:.4f}, p-value = {p_value_all:.4f}")
+    
+    if np.sum(outlier_mask_plot) > 0:
+        print("WITHOUT OUTLIERS:")
+        print(f"  Equation: [Fe/H] = {slope_clean:.4f} × Age + {intercept_clean:.3f}")
+        print(f"  R² = {r_value_clean**2:.4f}")
+        
+        # Calculate improvement
+        slope_diff = slope_clean - slope_all
+        r2_diff = r_value_clean**2 - r_value_all**2
+        print(f"\nIMPROVEMENT by removing outliers:")
+        print(f"  Slope change: {slope_diff:.4f} dex/Gyr")
+        print(f"  R² improvement: {r2_diff:.4f}")
+    
+    # Interpretation
+    r2_all = r_value_all**2
+    if r2_all > 0.5:
+        corr_strength = "STRONG"
+    elif r2_all > 0.3:
+        corr_strength = "MODERATE" 
+    else:
+        corr_strength = "WEAK"
+    print(f"\nOverall correlation strength: {corr_strength}")
+    print("="*70)
+
+# Add labels and titles
+plt.xlabel('Age (Gyrs)', fontsize=12)
+plt.ylabel('Metallicity [Fe/H]', fontsize=12)
+plt.title('Van Den Berg: Age vs Metallicity With and Without Outliers', fontsize=14)
+plt.grid(True, alpha=0.3)
+
+# Show plot
+plt.tight_layout()
+plt.show()
+
 ### =================== HARRIS 3D POSITION =================== ###
 
 # 3D position 

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy import stats
 from mpl_toolkits.mplot3d import Axes3D
 
 # read Harris Part I Data
@@ -58,6 +59,154 @@ for i in range(len(Krause21)):
 plt.xlabel('Age (Gyrs)')
 plt.ylabel('Metalicity [Fe/H]')
 plt.title('Age vs Metalicity (Krause)')
+
+#Show plot
+plt.show()
+
+### ============ Test 1 : Age - Metalicity Relation Analysis ============== ###
+### ---------------- plot linear of best fit --------------- ###
+## 1. linear best fit line with outliers
+# scatter plot Krause Age vs Metalicity
+plt.figure(figsize=(10, 8))
+plt.scatter(Age_Krause, FeH_Krause, c=Age_Krause, cmap='coolwarm', s=50, alpha=0.7)
+
+# Calculate line of best fit
+# First, handle any NaN values
+mask = ~np.isnan(Age_Krause) & ~np.isnan(FeH_Krause)
+ages_clean = Age_Krause[mask]
+feh_clean = FeH_Krause[mask]
+
+if len(ages_clean) > 1:  # Need at least 2 points for linear regression
+    # Perform linear regression
+    slope, intercept, r_value, p_value, std_err = stats.linregress(ages_clean, feh_clean)
+    
+    # Create line points
+    age_min, age_max = np.min(ages_clean), np.max(ages_clean)
+    age_range = np.linspace(age_min, age_max, 100)
+    best_fit_line = slope * age_range + intercept
+    
+    # Plot the line of best fit
+    plt.plot(age_range, best_fit_line, 'k-', linewidth=2, 
+             label=f'Best Fit: [Fe/H] = {slope:.3f}×Age + {intercept:.3f}\n(R² = {r_value**2:.3f})')
+    
+    # Add legend
+    plt.legend(loc='best')
+    
+    # Print formatted results
+    print("=" * 50)
+    print("KRAUSE DATA - LINEAR REGRESSION RESULTS")
+    print("=" * 50)
+    print(f"Best Fit Formula: [Fe/H] = {slope:.4f} × Age + {intercept:.3f}")
+    print(f"R-squared (R²): {r_value**2:.4f}")
+    print(f"Correlation coefficient (R): {r_value:.4f}")
+    print(f"P-value: {p_value:.4f}")
+    print(f"Standard error: {std_err:.4f}")
+    print(f"Number of clusters used: {len(ages_clean)}")
+    print("=" * 50)
+    
+    # Interpretation
+    if r_value**2 > 0.5:
+        print("STRONG correlation between age and metallicity")
+    elif r_value**2 > 0.3:
+        print("MODERATE correlation between age and metallicity")
+    else:
+        print("WEAK correlation between age and metallicity")
+
+#Add labels and titles for Krause Metalicity plot
+for i in range(len(Krause21)):
+    plt.text(Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),   #small x-offset
+             FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),   # small y-offset
+             Names_Krause[i], fontsize=7, color='black', alpha=0.8)
+
+#Add labels and titles for the plot
+plt.xlabel('Age (Gyrs)')
+plt.ylabel('Metalicity [Fe/H]')
+plt.title('Age vs Metalicity with Best Fit Line (Krause)')
+plt.grid(True, alpha=0.3)
+
+#Show plot
+plt.show()
+
+##2. linear best fit without outliers
+
+# scatter plot Krause Age vs Metalicity
+plt.figure(figsize=(12, 8))
+
+mask = ~np.isnan(Age_Krause) & ~np.isnan(FeH_Krause)
+ages_clean = Age_Krause[mask]
+feh_clean = FeH_Krause[mask]
+names_clean = np.array(Names_Krause)[mask]
+
+if len(ages_clean) > 1:
+    # Calculate best fit line
+    slope_all, intercept_all, r_value_all, p_value_all, std_err_all = stats.linregress(ages_clean, feh_clean)
+    
+    # Calculate residuals
+    predicted_all = slope_all * ages_clean + intercept_all
+    residuals = feh_clean - predicted_all
+    residual_std = np.std(residuals)
+    
+    print("RESIDUAL ANALYSIS:")
+    print(f"Residual standard deviation: {residual_std:.4f}")
+    print(f"2σ threshold: ±{2*residual_std:.4f}")
+    print(f"1.5σ threshold: ±{1.5*residual_std:.4f}")
+    
+    # Try different outlier thresholds
+    thresholds = [2.0, 1.5, 1.0]  # Try 2σ, 1.5σ, and 1σ
+    
+    for threshold in thresholds:
+        outlier_mask = np.abs(residuals) > threshold * residual_std
+        n_outliers = np.sum(outlier_mask)
+        outliers = names_clean[outlier_mask]
+        print(f"\n{threshold}σ threshold: {n_outliers} outliers")
+        if n_outliers > 0:
+            print(f"Outliers at {threshold}σ: {list(outliers)}")
+    
+    # Create line points
+    age_range = np.linspace(np.min(ages_clean), np.max(ages_clean), 100)
+    best_fit_line = slope_all * age_range + intercept_all
+    
+    # Plot with 1.5σ outliers highlighted (more sensitive)
+    outlier_mask_1_5 = np.abs(residuals) > 1.5 * residual_std
+    
+    # Plot inliers
+    plt.scatter(ages_clean[~outlier_mask_1_5], feh_clean[~outlier_mask_1_5], 
+                c=ages_clean[~outlier_mask_1_5], cmap='coolwarm', s=50, alpha=0.7,
+                label='Main Population')
+    
+    # Plot potential mild outliers (1.5σ)
+    if np.sum(outlier_mask_1_5) > 0:
+        plt.scatter(ages_clean[outlier_mask_1_5], feh_clean[outlier_mask_1_5], 
+                    color='orange', s=80, alpha=0.8, edgecolors='black', linewidth=1.5,
+                    label=f'Potential Mild Outliers (1.5σ): {np.sum(outlier_mask_1_5)} clusters')
+        
+        # Label mild outliers
+        for i in range(len(ages_clean)):
+            if outlier_mask_1_5[i]:
+                plt.text(ages_clean[i] + 0.1, feh_clean[i] + 0.02, 
+                         names_clean[i], fontsize=8, color='orange', alpha=0.9, weight='bold')
+    
+    # Plot best fit line
+    plt.plot(age_range, best_fit_line, 'k-', linewidth=2, 
+             label=f'Best Fit: [Fe/H] = {slope_all:.3f}×Age + {intercept_all:.3f}\n(R² = {r_value_all**2:.3f})')
+    
+    plt.legend(loc='best')
+    
+    print(f"\nCONCLUSION: With R² = {r_value_all**2:.4f}, the data shows weak correlation")
+    print("No strong outliers detected, suggesting a relatively homogeneous population")
+
+# Add cluster labels
+for i in range(len(Krause21)):
+    plt.text(Age_Krause[i] + 0.05, FeH_Krause[i] + 0.05, 
+             Names_Krause[i], fontsize=7, color='black', alpha=0.8)
+
+plt.xlabel('Age (Gyrs)')
+plt.ylabel('Metallicity [Fe/H]')
+plt.title('Age vs Metallicity - No Strong Outliers Detected (Krause)')
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
 
 #Show plot
 plt.show()

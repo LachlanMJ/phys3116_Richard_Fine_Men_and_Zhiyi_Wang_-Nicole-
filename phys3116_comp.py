@@ -94,11 +94,20 @@ plt.show()
 
 ### =================== HARRIS 3D POSITION =================== ###
 
+# Sun position
+R0 = 8.2      # kpc, Galactocentric radius of the Sun
+z0 = 0.0208   # kpc, Sun height above the midplane (~20.8 pc)
+
+# Convert to Galactocentric (origin at GC, x toward Sun, y rotation, z NGP)
+X_gc = R0 - X_Harris
+Y_gc = Y_Harris
+Z_gc = z0 + Z_Harris
+
 # 3D position 
 plt.figure(1)
 ax = plt.axes(projection='3d')
 # Some data points black so they are visible on the plot
-ax.scatter(X_Harris, Y_Harris, Z_Harris, c=Rotational_v_Harris, edgecolors='black', cmap='coolwarm')
+ax.scatter(X_gc, Y_gc, Z_gc, c=Rotational_v_Harris, edgecolors='black', cmap='coolwarm')
 
 # Create a circle (radius 10 kpc, centered at origin)
 r = 10  # radius in kpc
@@ -135,13 +144,13 @@ plt.show()
 lim = 15.0 # axis limits for x, y, z
 
 # Compute mask for points inside the 10 kpc circle in the x–y plane
-dist_xy = np.sqrt(X_Harris**2 + Y_Harris**2)
+dist_xy = np.sqrt(X_gc**2 + Y_gc**2)
 inside_mask = dist_xy <= r
 
 # Plotting zoomed in figure of previous graph
 fig = plt.figure(figsize=(8, 7))
 ax = fig.add_subplot(111, projection='3d')
-sc = ax.scatter(X_Harris, Y_Harris, Z_Harris,
+sc = ax.scatter(X_gc, Y_gc, Z_gc,
                 c=Rotational_v_Harris, edgecolors='black', cmap='coolwarm')
 
 # Draw the 10 kpc circle in the x–y plane
@@ -156,7 +165,7 @@ ax.plot_wireframe(x_sphere, y_sphere, z_sphere, color='black', alpha=0.3, linewi
 # Label points inside the circle
 for i in range(len(Names_Harris)):
     if inside_mask[i]:
-        ax.text(X_Harris[i], Y_Harris[i], Z_Harris[i], str(Names_Harris[i]), color='black', fontsize=8, alpha=0.9)
+        ax.text(X_gc[i], Y_gc[i], Z_gc[i], str(Names_Harris[i]), color='black', fontsize=8, alpha=0.9)
 
 # Axes labels and titles
 ax.set_xlabel('x Displacement (kpc)')
@@ -171,10 +180,10 @@ plt.colorbar(sc, ax=ax, label='Heliocentric Radial Velocities (km/s)')
 plt.show()
 
 # 2d plot of x-y plan to more easily identify accreted clusters
-ax.scatter(X_Harris, Y_Harris, s=30)
+ax.scatter(X_gc, Y_gc, s=30)
 outside_mask = ~inside_mask
 fig, ax = plt.subplots(figsize=(7, 7))
-ax.scatter(X_Harris, Y_Harris, s=30)
+ax.scatter(X_gc, Y_gc, s=30)
 
 # Circle
 circle = plt.Circle((0, 0), r, edgecolor='red', linewidth=1.6, facecolor='red', alpha=0.3, label='10 kpc circle')
@@ -183,7 +192,7 @@ ax.add_patch(circle)
 # Label clusters outside of the circle
 for i in range(len(Names_Harris)):
     if outside_mask[i]:
-        ax.text(X_Harris[i], Y_Harris[i], str(Names_Harris[i]), fontsize=8, color='black', alpha=0.9)
+        ax.text(X_gc[i], Y_gc[i], str(Names_Harris[i]), fontsize=8, color='black', alpha=0.9)
 
 # Axes labels, equal aspect, limits, colorbar
 ax.set_xlabel('x Displacement (kpc)')

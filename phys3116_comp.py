@@ -66,26 +66,26 @@ plt.show()
 ### =================== VAN DEN BERG AGE vs METALICITY =================== ###
 
 plt.figure(figsize=(8,6))
-plt.errorbar(Age_vdb, FeH_vdb,
-             xerr=Age_error_vdb, fmt='none',  # no markers, just error bars
+plt.errorbar(FeH_vdb, Age_vdb,
+             yerr=Age_error_vdb, fmt='none',  # error bars
              ecolor='grey', elinewidth=1, capsize=2, alpha=0.6, zorder=1)
 
 # scatter plot Age vs Metalicity Van Den Berg
-plt.scatter(Age_vdb, FeH_vdb, c=Age_vdb, cmap='coolwarm', s=40, zorder=2)
+plt.scatter(FeH_vdb, Age_vdb, c=Age_vdb, cmap='coolwarm', s=40, zorder=2)
 for i in range(len(vandenBerg_table2)):
-    plt.text(Age_vdb[i] + 0.05 * np.max(Age_vdb) / len(vandenBerg_table2),   #small x-offset
-             FeH_vdb[i] + 0.05 * np.max(FeH_vdb) / len(vandenBerg_table2),   # small y-offset
+    plt.text(FeH_vdb[i] + 0.05 * np.max(FeH_vdb) / len(vandenBerg_table2),   #small x-offset
+             Age_vdb[i] + 0.05 * np.max(Age_vdb) / len(vandenBerg_table2),   # small y-offset
              Names_vdb[i], fontsize=7, color='black', alpha=0.8)
 
 #Add labels (names) next to each data point
 for i in range(len(vandenBerg_table2)):
-    plt.text(FeH_vdb[i] + 0.02*np.max(FeH_vdb),   # small x-offset
-             Age_vdb[i] + 0.02*np.max(Age_vdb),  # small y-offset
+    plt.text(Age_vdb[i] + 0.02*np.max(Age_vdb),   # small x-offset
+             FeH_vdb[i] + 0.02*np.max(FeH_vdb),  # small y-offset
              Names_vdb[i], fontsize=7, color='black', alpha=0.8)
 
 #Add labels and titles for the plot
-plt.xlabel('Age (Gyrs)')
-plt.ylabel('Metalicity [Fe/H]')
+plt.xlabel('Metalicity [Fe/H]')
+plt.ylabel('Age (Gyrs)')
 plt.title('Age vs Metalicity (Van Den Berg)')
 
 #Show plot

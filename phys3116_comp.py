@@ -43,6 +43,9 @@ Y_Harris = harris_part1['Y']
 Z_Harris = harris_part1['Z']
 Rotational_v_Harris = harris_part2['v_r']
 R_gc_Harris = harris_part1['R_gc']
+l_Harris = np.radians(harris_part1['L'])
+b_Harris = np.radians(harris_part1['B'])
+v_LSR_Harris = harris_part2['v_LSR']
 
 ### =================== KRAUSE AGE vs METALICITY =================== ###
 
@@ -95,10 +98,10 @@ plt.show()
 ### =================== HARRIS 3D POSITION =================== ###
 
 # Sun position
-R0 = 8.2      # kpc, Galactocentric radius of the Sun
-z0 = 0.0208   # kpc, Sun height above the midplane (~20.8 pc)
+R0 = 8.2 # kpc, Galactocentric radius of the Sun
+z0 = 0.02 # kpc, Sun height above the midplane (~20 pc)
 
-# Convert to Galactocentric (origin at GC, x toward Sun, y rotation, z NGP)
+# Convert to Galactocentric
 X_gc = R0 - X_Harris
 Y_gc = Y_Harris
 Z_gc = z0 + Z_Harris
@@ -107,7 +110,7 @@ Z_gc = z0 + Z_Harris
 plt.figure(1)
 ax = plt.axes(projection='3d')
 # Some data points black so they are visible on the plot
-ax.scatter(X_gc, Y_gc, Z_gc, c=Rotational_v_Harris, edgecolors='black', cmap='coolwarm')
+sc = ax.scatter(X_gc, Y_gc, Z_gc)
 
 # Create a circle (radius 10 kpc, centered at origin)
 r = 10  # radius in kpc
@@ -120,21 +123,18 @@ ax.plot_trisurf(x_circle, y_circle, z_circle, color='red', alpha=0.1, linewidth=
 
 # Create a sphere (radius 3 kpc, centered at origin)
 r_sphere = 3  # radius in kpc
-phi = np.linspace(0, np.pi, 100)      # polar angle
-theta_sphere = np.linspace(0, 2*np.pi, 100)  # azimuthal angle
+phi = np.linspace(0, np.pi, 100) # polar angle
+theta_sphere = np.linspace(0, 2*np.pi, 100) # azimuthal angle
 theta_sphere, phi = np.meshgrid(theta_sphere, phi)
 x_sphere = r_sphere * np.sin(phi) * np.cos(theta_sphere)
 y_sphere = r_sphere * np.sin(phi) * np.sin(theta_sphere)
 z_sphere = r_sphere * np.cos(phi)
-ax.plot_surface(x_sphere, y_sphere, z_sphere, color='blue', alpha=0.15, linewidth=0, zorder=1)
+ax.plot_surface(x_sphere, y_sphere, z_sphere, color='green', alpha=0.15, linewidth=0, zorder=1)
 ax.plot_wireframe(x_sphere, y_sphere, z_sphere, color='black', alpha=0.3, linewidth=0.4, zorder=2)
 
-# Added Colour Bar to map heliocentric radial velocities
-plt.colorbar(ax.collections[0], ax=ax, label = 'Heliocentric Radial Velocities (km/s)')
 ax.set_xlabel('x Displacement (kpc)')
 ax.set_ylabel('y Displacement (kpc)')
 ax.set_zlabel('z Displacement (kpc)')
-ax.legend
 
 # Show plot
 plt.show()
@@ -150,8 +150,7 @@ inside_mask = dist_xy <= r
 # Plotting zoomed in figure of previous graph
 fig = plt.figure(figsize=(8, 7))
 ax = fig.add_subplot(111, projection='3d')
-sc = ax.scatter(X_gc, Y_gc, Z_gc,
-                c=Rotational_v_Harris, edgecolors='black', cmap='coolwarm')
+sc = ax.scatter(X_gc, Y_gc, Z_gc)
 
 # Draw the 10 kpc circle in the x–y plane
 theta = np.linspace(0, 2*np.pi, 300)
@@ -159,13 +158,8 @@ ax.plot(x_circle, y_circle, z_circle, color='red', alpha=0.7, linewidth=1.8)
 ax.plot_trisurf(x_circle, y_circle, z_circle, color='red', alpha=0.1, linewidth=0)
 
 # 3 kpc sphere (blue)
-ax.plot_surface(x_sphere, y_sphere, z_sphere, color='blue', alpha=0.15, linewidth=0, zorder=1)
+ax.plot_surface(x_sphere, y_sphere, z_sphere, color='green', alpha=0.15, linewidth=0, zorder=1)
 ax.plot_wireframe(x_sphere, y_sphere, z_sphere, color='black', alpha=0.3, linewidth=0.4, zorder=2)
-
-# Label points inside the circle
-for i in range(len(Names_Harris)):
-    if inside_mask[i]:
-        ax.text(X_gc[i], Y_gc[i], Z_gc[i], str(Names_Harris[i]), color='black', fontsize=8, alpha=0.9)
 
 # Axes labels and titles
 ax.set_xlabel('x Displacement (kpc)')
@@ -174,8 +168,6 @@ ax.set_zlabel('z Displacement (kpc)')
 ax.set_xlim(-lim, lim)
 ax.set_ylim(-lim, lim)
 ax.set_zlim(-lim, lim)
-ax.set_title('Labels for Clusters Inside 10 kpc Circle')
-plt.colorbar(sc, ax=ax, label='Heliocentric Radial Velocities (km/s)')
 
 plt.show()
 
@@ -194,7 +186,7 @@ for i in range(len(Names_Harris)):
     if outside_mask[i]:
         ax.text(X_gc[i], Y_gc[i], str(Names_Harris[i]), fontsize=8, color='black', alpha=0.9)
 
-# Axes labels, equal aspect, limits, colorbar
+# Axes labels, equal aspect, limits
 ax.set_xlabel('x Displacement (kpc)')
 ax.set_ylabel('y Displacement (kpc)')
 ax.set_title('x–y Projection with 10 kpc Circle')
@@ -284,3 +276,5 @@ plt.title('Metalicity vs Galactocentric Radius (Van Den Berg)')
 
 #Show plot
 plt.show()
+
+print(max(v_rot))

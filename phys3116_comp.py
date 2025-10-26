@@ -47,17 +47,17 @@ R_gc_Harris = harris_part1['R_gc']
 ### =================== KRAUSE AGE vs METALICITY =================== ###
 
 # scatter plot Krause Age vs Metalicity
-plt.scatter(Age_Krause, FeH_Krause, c = Age_Krause, cmap = 'coolwarm')
+plt.scatter(FeH_Krause, Age_Krause, c = Age_Krause, cmap = 'coolwarm')
 
 #Add labels and titles for Krause Metalicity plot
 for i in range(len(Krause21)):
-    plt.text(Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),   #small x-offset
-             FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),   # small y-offset
+    plt.text(FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),   #small x-offset
+             Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),   # small y-offset
              Names_Krause[i], fontsize=7, color='black', alpha=0.8)
 
 #Add labels and titles for the plot
-plt.xlabel('Age (Gyrs)')
-plt.ylabel('Metalicity [Fe/H]')
+plt.xlabel('Metalicity [Fe/H]')
+plt.ylabel('Age (Gyrs)')
 plt.title('Age vs Metalicity (Krause)')
 
 #Show plot

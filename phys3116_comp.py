@@ -109,6 +109,17 @@ z_circle = np.zeros_like(theta)
 ax.plot(x_circle, y_circle, z_circle, color='black', alpha=0.4, linewidth=2, label='10 kpc circle')
 ax.plot_trisurf(x_circle, y_circle, z_circle, color='red', alpha=0.1, linewidth=0)
 
+# Create a sphere (radius 3 kpc, centered at origin)
+r_sphere = 3  # radius in kpc
+phi = np.linspace(0, np.pi, 100)      # polar angle
+theta_sphere = np.linspace(0, 2*np.pi, 100)  # azimuthal angle
+theta_sphere, phi = np.meshgrid(theta_sphere, phi)
+x_sphere = r_sphere * np.sin(phi) * np.cos(theta_sphere)
+y_sphere = r_sphere * np.sin(phi) * np.sin(theta_sphere)
+z_sphere = r_sphere * np.cos(phi)
+ax.plot_surface(x_sphere, y_sphere, z_sphere, color='blue', alpha=0.15, linewidth=0, zorder=1)
+ax.plot_wireframe(x_sphere, y_sphere, z_sphere, color='black', alpha=0.3, linewidth=0.4, zorder=2)
+
 # Added Colour Bar to map heliocentric radial velocities
 plt.colorbar(ax.collections[0], ax=ax, label = 'Heliocentric Radial Velocities (km/s)')
 ax.set_xlabel('x Displacement (kpc)')
@@ -138,11 +149,14 @@ theta = np.linspace(0, 2*np.pi, 300)
 ax.plot(x_circle, y_circle, z_circle, color='red', alpha=0.7, linewidth=1.8)
 ax.plot_trisurf(x_circle, y_circle, z_circle, color='red', alpha=0.1, linewidth=0)
 
+# 3 kpc sphere (blue)
+ax.plot_surface(x_sphere, y_sphere, z_sphere, color='blue', alpha=0.15, linewidth=0, zorder=1)
+ax.plot_wireframe(x_sphere, y_sphere, z_sphere, color='black', alpha=0.3, linewidth=0.4, zorder=2)
+
 # Label points inside the circle
 for i in range(len(Names_Harris)):
     if inside_mask[i]:
-        ax.text(X_Harris[i], Y_Harris[i], Z_Harris[i],
-                str(Names_Harris[i]), color='black', fontsize=8, alpha=0.9)
+        ax.text(X_Harris[i], Y_Harris[i], Z_Harris[i], str(Names_Harris[i]), color='black', fontsize=8, alpha=0.9)
 
 # Axes labels and titles
 ax.set_xlabel('x Displacement (kpc)')

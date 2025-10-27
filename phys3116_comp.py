@@ -70,10 +70,8 @@ for i in range(len(Krause21)):
     plt.text(
         FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),
         Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),
-        Names_Krause[i], fontsize=7, color='black', alpha=0.8
-    )
-
-# -------- helpers --------
+        Names_Krause[i], fontsize=7, color='black', alpha=0.8)
+    
 def find_idx(names, key):
     key_norm = key.lower().replace(" ", "")
     for i, n in enumerate(names):
@@ -101,7 +99,6 @@ def weighted_flat_quad_fit(xi, yi, x0, w=None, min_abs_a=None):
         a = -min_abs_a
     return lambda xq: c + a*(xq - x0)**2, a, c
 
-# -------- indices of steering targets --------
 ix_6388  = find_idx(Names_Krause, "NGC 6388")
 ix_4590  = find_idx(Names_Krause, "NGC 4590")
 ix_palom = find_idx(Names_Krause, "Palomar 12")
@@ -110,7 +107,6 @@ x = FeH_Krause
 y = Age_Krause
 x0 = np.min(x)  # flat-at-left anchor (lowest metallicity)
 
-# -------- split sequences --------
 top_mask    = y >= np.quantile(y, 0.60)
 bottom_mask = y <= np.quantile(y, 0.35)
 
@@ -122,21 +118,21 @@ w_bot = np.ones_like(y, dtype=float)
 if ix_4590 is not None: w_bot[ix_4590] = 25.0
 if ix_palom is not None: w_bot[ix_palom] = 35.0
 
-# -------- fits --------
+# fits 
 f_top, a_top, c_top = weighted_flat_quad_fit(x[top_mask], y[top_mask], x0, w=w_top[top_mask])
 f_bot, a_bot, c_bot = weighted_flat_quad_fit(
     x[bottom_mask], y[bottom_mask], x0, w=w_bot[bottom_mask],
     min_abs_a=1.20*abs(a_top)  # make bottom fall faster
 )
 
-# -------- shift bottom curve upward to NGC 4590 --------
+#shift bottom curve upward to NGC 4590
 if ix_4590 is not None:
     shift = y[ix_4590] - f_bot(x[ix_4590])  # match NGC 4590 exactly
 else:
     shift = 0.3  # fallback tweak if not found
 f_bot_shifted = lambda xq: f_bot(xq) + shift
 
-# -------- plot curves --------
+# plot curves 
 xx = np.linspace(x.min(), x.max(), 400)
 plt.plot(xx, f_top(xx),         color='red',        lw=2.3, label='In Situ')
 plt.plot(xx, f_bot_shifted(xx), color='lightcoral', lw=2.3, label='Accreted')
@@ -151,7 +147,7 @@ plt.ylabel('Age (Gyrs)')
 plt.title('Age vs Metalicity (Krause)')
 plt.legend()
 # Identify likely accreted clusters
-# ----------------------------
+
 # A cluster is "accreted" if it lies closer to the bottom curve than to the top
 y_top_pred = f_top(FeH_Krause)
 y_bot_pred = f_bot_shifted(FeH_Krause)
@@ -166,7 +162,7 @@ n_accreted = np.sum(accreted_mask)
 
 print(f"Estimated number of accreted clusters: {n_accreted}")
 
-# (Optional) visually highlight them
+# visually highlight them
 plt.scatter(
     FeH_Krause[accreted_mask],
     Age_Krause[accreted_mask],
@@ -455,6 +451,38 @@ for i in range(len(vandenBerg_table2)):
 plt.xlabel('Galactocentric Radius (kpc)')
 plt.ylabel('Metalicity [Fe/H]')
 plt.title('Metalicity vs Galactocentric Radius (Van Den Berg)')
+
+#Show plot
+plt.show()
+
+### =================== LSR VELOCITY - GALACTOCENTRIC RADIUS =================== ###
+
+# scatter plot LSR nad Galactocentric radius data
+plt.scatter(R_gc_Harris, v_LSR_Harris, c = R_gc_Harris, cmap = 'coolwarm')
+
+# vertical line at 10 kpc
+plt.axvline(x=10, color='black', linestyle='--', linewidth=1)
+plt.text(10.1, plt.ylim()[1]*0.9, '10 kpc', rotation=90, va='top', ha='left', fontsize=9)
+
+plt.axhline(y=0, color='grey', linestyle='--', linewidth=1)
+plt.text(plt.xlim()[1]*0.98, 5, '0 km/s', ha='right', va='bottom', fontsize=9)
+
+# Label clusters beyond 10 kpc AND v_LSR < 0
+labelled_clusters = []
+for i, (x, y) in enumerate(zip(R_gc_Harris, v_LSR_Harris)):
+    if x > 10 and y < 0:
+        plt.text(x, y, Names_Harris[i], fontsize=8, ha='left', va='center')
+        labelled_clusters.append(Names_Harris[i])
+
+# Print the clusters beyond 10 kpc
+print("Clusters beyond 10 kpc and with v_LSR < 0 km/s:")
+for name in labelled_clusters:
+    print(name)
+
+#Add labels and titles for the plot
+plt.xlabel('Galactocentric Radius (kpc)')
+plt.ylabel('$v_{LSR}$ (km/s)')
+plt.title('$v_{LSR}$ vs Galactocentric Radius (Harris)')
 
 #Show plot
 plt.show()

@@ -63,6 +63,117 @@ plt.xlabel('Metalicity [Fe/H]')
 plt.ylabel('Age (Gyrs)')
 plt.title('Age vs Metalicity (Krause)')
 
+plt.scatter(FeH_Krause, Age_Krause, c=Age_Krause, cmap='coolwarm')
+
+# Labels (keep as in your code)
+for i in range(len(Krause21)):
+    plt.text(
+        FeH_Krause[i] + 0.05 * np.max(FeH_Krause) / len(Krause21),
+        Age_Krause[i] + 0.05 * np.max(Age_Krause) / len(Krause21),
+        Names_Krause[i], fontsize=7, color='black', alpha=0.8
+    )
+
+# -------- helpers --------
+def find_idx(names, key):
+    key_norm = key.lower().replace(" ", "")
+    for i, n in enumerate(names):
+        if n.lower().replace(" ", "") == key_norm:
+            return i
+    for i, n in enumerate(names):
+        if key_norm in n.lower().replace(" ", ""):
+            return i
+    return None
+
+def weighted_flat_quad_fit(xi, yi, x0, w=None, min_abs_a=None):
+    """
+    Fit y = c + a*(x-x0)**2 with a<=0 (concave-down) and slope 0 at x0.
+    Weighted least squares; optionally enforce |a| >= min_abs_a.
+    """
+    if w is None:
+        w = np.ones_like(xi)
+    A = np.vstack([np.ones_like(xi), (xi - x0)**2]).T
+    # weighted solve without building a big diagonal
+    Aw = A * w[:, None]
+    yw = yi * w
+    c, a = np.linalg.lstsq(Aw, yw, rcond=None)[0]
+    a = -abs(a)  # force concave-down
+    if (min_abs_a is not None) and (abs(a) < min_abs_a):
+        a = -min_abs_a
+    return lambda xq: c + a*(xq - x0)**2, a, c
+
+# -------- indices of steering targets --------
+ix_6388  = find_idx(Names_Krause, "NGC 6388")
+ix_4590  = find_idx(Names_Krause, "NGC 4590")
+ix_palom = find_idx(Names_Krause, "Palomar 12")
+
+x = FeH_Krause
+y = Age_Krause
+x0 = np.min(x)  # flat-at-left anchor (lowest metallicity)
+
+# -------- split sequences --------
+top_mask    = y >= np.quantile(y, 0.60)
+bottom_mask = y <= np.quantile(y, 0.35)
+
+# -------- weights to steer curves --------
+w_top = np.ones_like(y, dtype=float)
+if ix_6388 is not None: w_top[ix_6388] = 30.0
+
+w_bot = np.ones_like(y, dtype=float)
+if ix_4590 is not None: w_bot[ix_4590] = 25.0
+if ix_palom is not None: w_bot[ix_palom] = 35.0
+
+# -------- fits --------
+f_top, a_top, c_top = weighted_flat_quad_fit(x[top_mask], y[top_mask], x0, w=w_top[top_mask])
+f_bot, a_bot, c_bot = weighted_flat_quad_fit(
+    x[bottom_mask], y[bottom_mask], x0, w=w_bot[bottom_mask],
+    min_abs_a=1.20*abs(a_top)  # make bottom fall faster
+)
+
+# -------- shift bottom curve upward to NGC 4590 --------
+if ix_4590 is not None:
+    shift = y[ix_4590] - f_bot(x[ix_4590])  # match NGC 4590 exactly
+else:
+    shift = 0.3  # fallback tweak if not found
+f_bot_shifted = lambda xq: f_bot(xq) + shift
+
+# -------- plot curves --------
+xx = np.linspace(x.min(), x.max(), 400)
+plt.plot(xx, f_top(xx),         color='red',        lw=2.3, label='In Situ')
+plt.plot(xx, f_bot_shifted(xx), color='lightcoral', lw=2.3, label='Accreted')
+
+# Optional: highlight the steering targets
+for idx in [ix_6388, ix_4590, ix_palom]:
+    if idx is not None:
+        plt.scatter(x[idx], y[idx], s=70, facecolors='none', edgecolors='k')
+
+plt.xlabel('Metallicity [Fe/H]')
+plt.ylabel('Age (Gyrs)')
+plt.title('Age vs Metalicity (Krause)')
+plt.legend()
+# Identify likely accreted clusters
+# ----------------------------
+# A cluster is "accreted" if it lies closer to the bottom curve than to the top
+y_top_pred = f_top(FeH_Krause)
+y_bot_pred = f_bot_shifted(FeH_Krause)
+
+# Distance from each cluster to each curve
+dist_top = np.abs(Age_Krause - y_top_pred)
+dist_bot = np.abs(Age_Krause - y_bot_pred)
+
+# Tag clusters closer to bottom curve
+accreted_mask = dist_bot < dist_top
+n_accreted = np.sum(accreted_mask)
+
+print(f"Estimated number of accreted clusters: {n_accreted}")
+
+# (Optional) visually highlight them
+plt.scatter(
+    FeH_Krause[accreted_mask],
+    Age_Krause[accreted_mask],
+    facecolors='none', edgecolors='blue', s=70, linewidths=1.5,
+    label='Likely accreted clusters'
+)
+
 #Show plot
 plt.show()
 
@@ -90,6 +201,77 @@ for i in range(len(vandenBerg_table2)):
 plt.xlabel('Metalicity [Fe/H]')
 plt.ylabel('Age (Gyrs)')
 plt.title('Age vs Metalicity (Van Den Berg)')
+
+# ---------- helper ----------
+def polyfit_weighted(x, y, deg=3, w=None):
+    if w is None:
+        return np.polyfit(x, y, deg)
+    return np.polyfit(x, y, deg, w=w)
+
+def smooth_xy_for_plot(x):
+    return np.linspace(x.min()-0.05, x.max()+0.05, 500)
+
+x = FeH_vdb
+y = Age_vdb
+
+# Global quadratic residual split
+p_all = np.polyfit(x, y, deg=2)
+resid = y - np.polyval(p_all, x)
+mask_upper = resid >= 0
+mask_lower = ~mask_upper
+
+# UPPER BRANCH (In Situ)
+p_up = np.polyfit(x[mask_upper], y[mask_upper], 2)
+xx_up = smooth_xy_for_plot(x[mask_upper])
+yy_up = np.polyval(p_up, xx_up)
+plt.plot(xx_up, yy_up, color="#d32f2f", lw=2.8, label="In Situ", zorder=2.6)
+
+# LOWER BRANCH (Accreted) 
+x_lo, y_lo = x[mask_lower], y[mask_lower]
+w_lo = np.ones_like(y_lo)
+
+# Strongly attract curve toward [Fe/H]≈−0.7 (around NGC XXXX)
+target_feh = -0.7
+anchor_x = np.array([target_feh])
+anchor_y = np.array([8.8])  
+anchor_w = np.array([15.0]) 
+
+# Boost upper part to keep flatter top
+q75 = np.quantile(y_lo, 0.75)
+w_lo[y_lo >= q75] *= 2.0
+
+# Combine with anchor
+x_fit = np.concatenate([x_lo, anchor_x])
+y_fit = np.concatenate([y_lo, anchor_y])
+w_fit = np.concatenate([w_lo, anchor_w])
+
+# Fit cubic and plot
+p_lo = polyfit_weighted(x_fit, y_fit, deg=2, w=w_fit)
+xx_lo = smooth_xy_for_plot(x_lo)
+yy_lo = np.polyval(p_lo, xx_lo)
+plt.plot(xx_lo, yy_lo, color="#f6a5a5", lw=2.8, ls="--", label="Potentially Accreted", zorder=2.6)
+
+plt.legend(loc="lower left", frameon=False)
+
+# ----- VAN DEN BERG VERSION -----
+try:
+    names = np.array(Names_vdb)      # cluster names
+    x, y  = FeH_vdb, Age_vdb         # metallicity, age
+
+    accreted_mask = mask_lower       # your dotted branch
+    insitu_mask   = mask_upper       # your solid branch
+
+    accreted_names_vdb = names[accreted_mask]
+    insitu_names_vdb   = names[insitu_mask]
+
+    print("\nAccreted candidates (van den Berg ages):")
+    for n in accreted_names_vdb: print(" -", n)
+
+    # Optional: save
+    # import pandas as pd
+    # pd.DataFrame({"cluster": accreted_names_vdb}).to_csv("accreted_candidates_vdb.csv", index=False)
+except Exception as e:
+    print("VdB list not produced:", e)
 
 #Show plot
 plt.show()
@@ -276,5 +458,3 @@ plt.title('Metalicity vs Galactocentric Radius (Van Den Berg)')
 
 #Show plot
 plt.show()
-
-print(max(v_rot))
